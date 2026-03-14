@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, User, inMemoryPersistence } from "firebase/auth";
+import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { StoreSettings } from "../types";
@@ -36,8 +36,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
       return;
     }
-
-    auth._persistence = inMemoryPersistence;
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
