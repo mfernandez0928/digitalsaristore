@@ -184,7 +184,7 @@ export default function Login() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="input-premium pl-14 pr-40"
+                  className="input-premium pl-14 pr-35"
                   placeholder="name@example.com"
                 />
               </div>
@@ -204,7 +204,7 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input-premium pl-14 pr-40"
+                  className="input-premium pl-14 pr-35"
                   placeholder="••••••••"
                 />
                 <button
