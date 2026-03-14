@@ -1,0 +1,121 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A product available in the sari-sari store.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the product." },
+        "price": { "type": "number", "description": "The price of the product in PHP." },
+        "stock": { "type": "number", "description": "The current stock level." },
+        "category": { "type": "string", "description": "The category of the product." },
+        "unit": { "type": "string", "enum": ["pcs", "pack"], "description": "The unit of the product (e.g., pcs, pack)." },
+        "imageUrl": { "type": "string", "description": "URL to the product image." },
+        "imagePath": { "type": "string", "description": "Storage path of the product image." },
+        "description": { "type": "string", "description": "A brief description of the product." }
+      },
+      "required": ["name", "price", "stock", "category"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "A product category.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the category." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the category was created." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "When the category was last updated." }
+      },
+      "required": ["name", "createdAt", "updatedAt"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A customer order or POS transaction.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The ID of the user who placed the order (for online orders)." },
+        "items": { "type": "array", "description": "The list of items in the order." },
+        "total": { "type": "number", "description": "The total price of the order." },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "preparing", "ready_for_pickup", "out_for_delivery", "completed", "cancelled"], "description": "The status of the order." },
+        "type": { "type": "string", "enum": ["online", "pos"], "description": "The type of order." },
+        "deliveryMethod": { "type": "string", "enum": ["delivery", "pickup"], "description": "How the order will be received." },
+        "preferredDate": { "type": "string", "description": "Buyer's preferred date." },
+        "preferredTime": { "type": "string", "description": "Buyer's preferred time." },
+        "confirmedDate": { "type": "string", "description": "Seller's confirmed date." },
+        "confirmedTime": { "type": "string", "description": "Seller's confirmed time." },
+        "sellerNotes": { "type": "string", "description": "Notes from the seller." },
+        "customerName": { "type": "string", "description": "The name of the customer (optional)." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "When the order was placed." }
+      },
+      "required": ["items", "total", "status", "type", "timestamp"]
+    },
+    "StoreSettings": {
+      "title": "Store Settings",
+      "description": "Global settings for the sari-sari store.",
+      "type": "object",
+      "properties": {
+        "storeName": { "type": "string", "description": "The name of the store." },
+        "adminEmail": { "type": "string", "description": "The email address of the store administrator." },
+        "phone": { "type": "string", "description": "Store phone number." },
+        "address": { "type": "string", "description": "Store address." },
+        "messengerLink": { "type": "string", "description": "Link to Facebook Messenger." },
+        "isHoliday": { "type": "boolean", "description": "Whether the store is on holiday." },
+        "holidayMessage": { "type": "string", "description": "Message to show during holiday." },
+        "businessHours": { "type": "object", "description": "Daily business hours." }
+      },
+      "required": ["storeName", "adminEmail"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile information.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "description": "User's email address." },
+        "displayName": { "type": "string", "description": "User's display name." },
+        "phone": { "type": "string", "description": "User's phone number." },
+        "address": { "type": "string", "description": "User's default delivery address." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the user account was created." }
+      },
+      "required": ["email"]
+    },
+    "Favorite": {
+      "title": "Favorite",
+      "description": "A user's favorite product.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The ID of the user." },
+        "productId": { "type": "string", "description": "The ID of the product." },
+        "productName": { "type": "string", "description": "The name of the product." },
+        "productPrice": { "type": "number", "description": "The price of the product." },
+        "productImageUrl": { "type": "string", "description": "The image URL of the product." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "When it was favorited." }
+      },
+      "required": ["userId", "productId"]
+    }
+  },
+  "firestore": {
+    "products": {
+      "schema": "Product",
+      "description": "Collection of products available for sale."
+    },
+    "categories": {
+      "schema": "Category",
+      "description": "Collection of product categories."
+    },
+    "orders": {
+      "schema": "Order",
+      "description": "Collection of customer orders and POS transactions."
+    },
+    "settings": {
+      "schema": "StoreSettings",
+      "description": "Global configuration settings."
+    },
+    "users": {
+      "schema": "User",
+      "description": "User profile information."
+    },
+    "favorites": {
+      "schema": "Favorite",
+      "description": "User favorite products."
+    }
+  }
+}

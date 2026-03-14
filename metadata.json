@@ -1,0 +1,5 @@
+{
+  "name": "Digital Sari-Sari",
+  "description": "A mobile-first e-commerce and POS system for local sari-sari stores.",
+  "requestFramePermissions": ["camera"]
+}
