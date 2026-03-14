@@ -6,28 +6,16 @@ let isMockMode = false;
 export const getSupabase = () => {
   if (supabaseInstance) return supabaseInstance;
 
-  // Debug: see what Vite is actually injecting (remove in production)
-  console.log("VITE_SUPABASE_URL =", import.meta.env.VITE_SUPABASE_URL);
-  console.log(
-    "VITE_SUPABASE_ANON_KEY =",
-    import.meta.env.VITE_SUPABASE_ANON_KEY
-      ? import.meta.env.VITE_SUPABASE_ANON_KEY.slice(0, 10) + "..."
-      : undefined,
-  );
-
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn(
-      "Supabase configuration missing. Falling back to Mock Mode. " +
-        "Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env / deployment settings.",
-    );
+    console.warn("Supabase configuration missing. Falling back to Mock Mode.");
     isMockMode = true;
     return null;
   }
 
-  // Sanitize and validate URL / key
+  // Sanitize and validate URL
   const sanitizedUrl = supabaseUrl
     .replace(/['"]/g, "")
     .trim()
@@ -35,18 +23,16 @@ export const getSupabase = () => {
   const sanitizedKey = supabaseAnonKey.replace(/['"]/g, "").trim();
 
   try {
-    // Swapped values detection
+    // Check for swapped values
     if (sanitizedUrl.startsWith("eyJ")) {
       throw new Error(
-        "Swapped Configuration: It looks like you put the Supabase Anon Key in the VITE_SUPABASE_URL field. " +
-          "Please swap them in your .env / Secrets panel.",
+        "Swapped Configuration: It looks like you put the Supabase Anon Key in the VITE_SUPABASE_URL field. Please swap them in the Secrets panel.",
       );
     }
 
     if (sanitizedKey.startsWith("https://")) {
       throw new Error(
-        "Swapped Configuration: It looks like you put the Supabase URL in the VITE_SUPABASE_ANON_KEY field. " +
-          "Please swap them in your .env / Secrets panel.",
+        "Swapped Configuration: It looks like you put the Supabase URL in the VITE_SUPABASE_ANON_KEY field. Please swap them in the Secrets panel.",
       );
     }
 
@@ -62,7 +48,7 @@ export const getSupabase = () => {
       );
     }
 
-    // Stripe key detection
+    // Comprehensive Stripe key detection
     const stripePrefixes = [
       "sb_publishable_",
       "pk_test_",
@@ -74,18 +60,16 @@ export const getSupabase = () => {
     const foundStripePrefix = stripePrefixes.find((p) =>
       sanitizedKey.toLowerCase().startsWith(p.toLowerCase()),
     );
+
     if (foundStripePrefix) {
       throw new Error(
-        `Configuration Error: You have provided a Stripe key (starting with "${foundStripePrefix}") ` +
-          'in the VITE_SUPABASE_ANON_KEY field. Supabase keys always start with "eyJ". ' +
-          'Go to Supabase → Project Settings → API and copy the "anon public" key.',
+        `Configuration Error: You have provided a Stripe key (starting with "${foundStripePrefix}") in the VITE_SUPABASE_ANON_KEY field. Supabase keys always start with "eyJ". Please go to your Supabase Dashboard -> Project Settings -> API and copy the "anon public" key.`,
       );
     }
 
     if (!sanitizedKey.startsWith("eyJ")) {
       throw new Error(
-        'Invalid Supabase Anon Key format. Supabase keys are long JWT strings that must start with "eyJ". ' +
-          "Check VITE_SUPABASE_ANON_KEY in your .env / Secrets panel.",
+        'Invalid Supabase Anon Key format. Supabase keys are long strings that must start with "eyJ". Please check your VITE_SUPABASE_ANON_KEY in the Secrets panel.',
       );
     }
 
@@ -96,10 +80,8 @@ export const getSupabase = () => {
         detectSessionInUrl: false,
       },
     });
-
     return supabaseInstance;
   } catch (err) {
-    console.error("Supabase initialization failed error:", err);
     console.warn(
       "Supabase initialization failed. Falling back to Mock Mode:",
       err,
@@ -109,25 +91,28 @@ export const getSupabase = () => {
   }
 };
 
-export const testSupabaseConnection = async (): Promise<boolean> => {
+export const testSupabaseConnection = async (): Promise<{
+  success: boolean;
+  error?: string;
+}> => {
   try {
     const supabase = getSupabase();
-    if (!supabase || isMockMode) return false;
-
-    const { data, error } = await supabase.storage.listBuckets();
-    if (error) {
-      console.warn(
-        "Supabase listBuckets error during connection test:",
-        error.message,
-      );
-      return false;
+    if (isMockMode || !supabase) {
+      return {
+        success: false,
+        error: "Supabase keys are missing in environment variables.",
+      };
     }
 
-    console.log("Supabase connection test succeeded, buckets:", data);
-    return true;
-  } catch (err) {
-    console.error("Supabase connection test threw error:", err);
-    return false;
+    // Test access to the specific bucket instead of listing all buckets
+    const { data, error } = await supabase.storage.getBucket(BUCKET_NAME);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
   }
 };
 
@@ -140,8 +125,10 @@ export const uploadProductImage = async (
 
   if (isMockMode || !supabase) {
     console.log("Mock Mode: Simulating image upload");
+    // Simulate upload delay
     await new Promise((resolve) => setTimeout(resolve, 800));
 
+    // Use a placeholder image based on the file name or just a random one
     const randomId = Math.floor(Math.random() * 1000);
     const mockUrl = `https://picsum.photos/seed/${randomId}/800/800`;
     return { url: mockUrl, path: `mock/products/${file.name}` };
@@ -162,14 +149,12 @@ export const uploadProductImage = async (
     if (uploadError) {
       if (uploadError.message.includes("bucket not found")) {
         throw new Error(
-          `Supabase error: The bucket "${BUCKET_NAME}" was not found. ` +
-            `Please create a public bucket named "${BUCKET_NAME}" in your Supabase storage.`,
+          `Supabase error: The bucket "${BUCKET_NAME}" was not found. Please create a public bucket named "${BUCKET_NAME}" in your Supabase storage.`,
         );
       }
       if (uploadError.message.includes("row-level security policy")) {
         throw new Error(
-          `Supabase RLS Error: Your storage bucket "${BUCKET_NAME}" has Row Level Security enabled ` +
-            "but no policy allows uploads. Please run the SQL fix in the Supabase SQL Editor.",
+          `Supabase RLS Error: Your storage bucket "${BUCKET_NAME}" has Row Level Security enabled but no policy allows uploads. Please run the SQL fix in the Supabase SQL Editor.`,
         );
       }
       throw new Error(`Supabase upload error: ${uploadError.message}`);
@@ -188,11 +173,6 @@ export const uploadProductImage = async (
 
 export const deleteProductImage = async (path: string): Promise<void> => {
   const supabase = getSupabase();
-  if (!supabase || isMockMode) {
-    console.log("Mock Mode: Skipping delete for", path);
-    return;
-  }
-
   const { error } = await supabase.storage.from(BUCKET_NAME).remove([path]);
 
   if (error) {
