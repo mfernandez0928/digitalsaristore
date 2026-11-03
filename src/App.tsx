@@ -92,7 +92,7 @@ const ConfigurationGuide = () => (
           <div className="ml-8 bg-slate-900 rounded-2xl p-4 flex flex-col gap-2">
             <div className="flex items-center gap-2 text-slate-400 text-xs font-mono">
               <Terminal size={12} />
-              <span>Add these to your AI Studio Secrets:</span>
+              <span>Add these to your environment variables:</span>
             </div>
             <code className="text-xs text-emerald-400 font-mono break-all">
               VITE_FIREBASE_API_KEY

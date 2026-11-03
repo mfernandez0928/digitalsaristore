@@ -3,8 +3,8 @@ import { getAuth, Auth } from "firebase/auth";
 import { getFirestore, Firestore, doc, getDocFromServer } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 
-// Import the Firebase configuration provided by AI Studio
-import firebaseConfig from '../../firebase-applet-config.json';
+// Firebase project configuration
+import firebaseConfig from '../../firebase-config.json';
 
 export const isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.apiKey !== "");
 
